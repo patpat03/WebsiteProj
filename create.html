@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-storage.js"></script>
+    <link rel="stylesheet" href="homepage.css">
+  </head>
+  <body>
+    <div class = "logIn">
+      <img src="logo.png" alt="">
+      <p font face="verdana" class = "font"><em>Create Account</em></p>
+      <input type="text" name="UN" placeholder="Email" id = "Email" class = "dlabel">
+      <input type="text" name="UN" placeholder="Password" id = "Pass" class = "clabel">
+      <input type="text" name="UN" placeholder="Re-Enter Password" id = "Re" class = "clabel">
+      <input type="text" name="UN" placeholder="First Name" id = "first" class = "clabel">
+      <input type="text" name="UN" placeholder="Last Name" id = "last" class = "clabel">
+      <button type="button" name="button" onclick="createAccount();" class = "log">Create Account</button>
+      <div class = "create"
+      <label>already have an account?</label>
+      <button type="button" name="button" class = "log" onclick="logIn()">Log In</button>
+      </div>
+      <script type="text/javascript">
+        var firebaseConfig = {
+          apiKey: "AIzaSyBSJtYFyOLoWn021M29OBsplQHezpcvaSQ",
+          authDomain: "help-daa23.firebaseapp.com",
+          databaseURL: "https://help-daa23.firebaseio.com",
+          projectId: "help-daa23",
+          storageBucket: "help-daa23.appspot.com",
+          messagingSenderId: "664670410489",
+          appId: "1:664670410489:web:5bc768f2d8500a5f96b428",
+          measurementId: "G-RJ4YV58777"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+        function logIn()
+        {
+          window.location = "index.html";
+        }
+        function createAccount()
+        {
+          var email = document.getElementById("Email");
+          var pass = document.getElementById("Pass");
+          var re = document.getElementById("Re");
+          if(pass.value != re.value)
+          {
+            alert("passwords don't match");
+            return;
+          }
+          firebase.auth().createUserWithEmailAndPassword(email.value, pass.value)
+          .then(function(user)
+          {
+                        firebase.auth().signInWithEmailAndPassword(email.value, pass.value)
+                        .then(function(user){
+                          window.location = "main.html";
+                          let reference = firebase.database().ref("users");
+                          var info = {"Email": email.value, "first": document.getElementById("first").value,"last": document.getElementById("last").value};
+                          reference.push(info);
+                        })
+                        .catch(function(error) {
+                          // Handle Errors here.
+                          var errorCode = error.code;
+                          errorMessage = error.message;
+                          alert(errorMessage);
+                          return;
+                          // ...
+                        });
+          })
+          .catch(function(error) {
+              // Handle Errors here.
+              var errorCode = error.code;
+              var errorMessage = error.message;
+              alert(errorMessage);
+              return;
+              // ...
+            });
+        }
+      </script>
+  </body>
+</html>

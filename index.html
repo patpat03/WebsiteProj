@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+  <html lang="en" dir="ltr">
+    <head>
+      <meta charset="utf-8">
+    <title>Log In</title>
+      <link rel="stylesheet" href="homepage.css">
+  </head>
+  <body>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-database.js"></script>
+    <script>
+  // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: "AIzaSyBSJtYFyOLoWn021M29OBsplQHezpcvaSQ",
+        authDomain: "help-daa23.firebaseapp.com",
+        databaseURL: "https://help-daa23.firebaseio.com",
+        projectId: "help-daa23",
+        storageBucket: "help-daa23.appspot.com",
+        messagingSenderId: "664670410489",
+        appId: "1:664670410489:web:5bc768f2d8500a5f96b428",
+        measurementId: "G-RJ4YV58777"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+      var errorMessage;
+      function logIn()
+      {
+        console.log("helloniab");
+        console.log("orins");
+        firebase.auth().signInWithEmailAndPassword(document.getElementById("UN").value, document.getElementById("password").value).catch(function(error) {
+          // Handle Errors here.
+          var errorCode = error.code;
+          errorMessage = error.message;
+          alert(errorMessage);
+          return;
+          // ...
+        });
+        firebase.auth().onAuthStateChanged(user => {
+        if(user) {
+          window.location = 'main.html'; //After successful login, user will be redirected to home.html
+        }
+        else
+        {
+          console.log("error: not logged in");
+        }
+      });
+      }
+      function create()
+      {
+        window.location = 'create.html';
+      }
+        window.onload = function(){
+           var refButton = document.getElementById("btnButton");
+           let node = document.getElementById("password");
+             node.addEventListener("keyup", function(event) {
+                 if (event.key === "Enter") {
+                     // Do work
+                     console.log("enter");
+                     logIn();
+                 }
+        });
+      }
+    </script>
+    <div class = "logIn">
+        <img src="logo.png" alt="">
+        <p font face="verdana" class = "fnt"><em>Log In</em></p>
+        <input type="text" name="UN" placeholder="Username" id = "UN">
+        <br>
+        <input type="text" name="" value="" placeholder="Password" id = "password">
+        <button type="button" name="button" onclick="logIn();" class = "log">Log In</button>
+        <div class = "create"
+        <label> Don't already have an account?</label>
+        <button type="button" name="button" class = "log" onclick="create()">Create Account</button>
+        </div>
+      </div>
+  </body>
+</html>

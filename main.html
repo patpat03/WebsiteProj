@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-storage.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="main.css">
+  </head>
+  <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    var create = document.createElement('div');
+    create.setAttribute('class', 'contain');
+    var dict = {};
+    var images = {};
+      var firebaseConfig = {
+        apiKey: "AIzaSyBSJtYFyOLoWn021M29OBsplQHezpcvaSQ",
+        authDomain: "help-daa23.firebaseapp.com",
+        databaseURL: "https://help-daa23.firebaseio.com",
+        projectId: "help-daa23",
+        storageBucket: "help-daa23.appspot.com",
+        messagingSenderId: "664670410489",
+        appId: "1:664670410489:web:5bc768f2d8500a5f96b428",
+        measurementId: "G-RJ4YV58777"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      var index = 0;
+      firebase.analytics();
+        var data = new Array();
+        reference = firebase.database().ref("Posts");
+        var head = document.createElement('h3');
+        document.body.append(head);
+        var div = document.createElement('div');
+        reference.orderByKey().on("child_added", function(snapshot)
+        {
+            data.push(snapshot.val());
+            //addNode(snapshot.val(), index);
+            addNode(data, index, snapshot.key);
+            console.log("hello");
+            index++;
+        });
+      function addNode(data, index, getkey)
+      {
+        var div = document.createElement('li');
+        // set style
+        var container = document.createElement('div');
+        reference = firebase.database().ref(getkey);
+        var elem = document.createElement("img");
+        var picindex = 0;
+        images[getkey] = new Array();
+        reference.orderByKey().on("child_added", function(snapshot)
+        {
+          console.log(snapshot.val());
+          if(picindex == 0)
+          {
+            elem.setAttribute('src', snapshot.val());
+          }
+          images[getkey].push(snapshot.val());
+          picindex++;
+        });
+        elem.addEventListener("click", function(){
+          if(images[getkey].length >0)
+          {
+            var div = document.getElementById("imageRemove");
+            div.style.display = "block";
+            var urls = images[getkey];
+            var ui = 0;
+            var content = document.createElement("img");
+            content.setAttribute("class", "contentImage");
+            content.setAttribute('src', urls[0]);
+            var left = document.createElement("BUTTON");
+            left.innerHTML = "left";
+            left.setAttribute("class", "left");
+            left.addEventListener("click", function(){
+                if(ui>0)
+                {
+                  ui--;
+                  content.setAttribute('src', urls[ui]);
+                }
+            });
+            var right = document.createElement("BUTTON");
+            right.innerHTML = "right";
+            right.setAttribute("class", "right");
+            right.addEventListener("click", function(){
+                if(ui<urls.length-1)
+                {
+                  ui++;
+                  content.setAttribute('src', urls[ui]);
+                }
+            });
+            div.append(content);
+            div.append(left);
+            div.append(right);
+          }
+        });
+        elem.setAttribute('class', 'imageClass');
+        var string = "div_" + index;
+        var string2 = "div2_" + index;
+        div.setAttribute('id', getkey);
+        // better to use CSS though - just set class
+        container.setAttribute('class', 'container');
+        div.setAttribute('class', 'myclass'); // and make sure myclass has some styles in css
+        var description = document.createElement("LABEL");
+        description.setAttribute('class', 'des');
+        description.innerHTML = data[index]["description"];
+
+        var owner = document.createElement("LABEL");
+        owner.setAttribute('class', 'owner');
+        owner.innerHTML = data[index]["Item"];
+
+        var title = document.createElement("LABEL");
+        title.setAttribute('class', 'title');
+        title.innerHTML = "Mihir";
+
+        var price = document.createElement("LABEL");
+        price.setAttribute('class', 'price');
+        price.innerHTML = "$" + data[index]["price"];
+
+        var cart = document.createElement("BUTTON");
+        cart.setAttribute('class', 'shop');
+        cart.innerHTML = "Add To Shopping Cart";
+        cart.addEventListener("click", function(){
+          var root = firebase.database().ref("Buy");
+          firebase.auth().onAuthStateChanged((usernew) => {
+            if (usernew) {
+              // User logged in already or has just logged in.
+              console.log("click");
+              var info = {"id": getkey};
+              root.child(usernew.uid).push(info);
+            } else {
+              // User not logged in or has just logged out.
+            }
+          });
+        });
+
+        var buy = document.createElement("BUTTON");
+        buy.setAttribute('class', 'buy');
+        buy.innerHTML = "Buy Now";
+        buy.addEventListener("click", function()
+        {
+            composeSetting();
+            var div = document.getElementById("contentRemove");
+            document.getElementsByTagName('h1')[0].style.display = 'none';
+            document.getElementsByTagName('BUTTON')[1].style.display = 'none';
+            document.getElementsByTagName('BUTTON')[0].style.display = 'none';
+            document.getElementById("card-element").style.display = "none";
+            document.getElementsByClassName("StripeElement")[1].style.marginTop = "125px";
+            var pay = document.createElement("BUTTON");
+            pay.innerHTML = "Buy"
+            pay.setAttribute("class", "buy");
+            pay.style.position = 'absolute';
+            pay.style.right = "10px";
+            pay.style.bottom = "20px";
+            let cost = document.createElement("LABEL");
+            cost.setAttribute('class', 'cost');
+            cost.innerHTML = "<strong>Total:</strong> " + data[index]["price"];
+            div.appendChild(cost);
+            div.appendChild(pay);
+            pay.addEventListener("click", function(){
+              firebase.auth().onAuthStateChanged((usernew) => {
+                if (usernew) {
+                  child = usernew;
+                  ref = firebase.database().ref("Payment").child(child.uid);
+                  ref.orderByKey().on("child_added", function(snapshot)
+                  {
+                      if(snapshot.exists())
+                      {
+                      $.ajax({
+                          type: "POST",
+                          url: "buy.php",
+                          data: {"customerId": snapshot.val(), "price": data[index]["price"]},
+                            success: function(data) {
+                              console.log("payed");
+                              console.log(data);
+                          }
+                      });
+                    }
+
+                      // Create an instance of the card Element.
+
+                  });
+                } else {
+                  // User not logged in or has just logged out.
+                }
+              });
+            });
+        });
+
+        var buttons = document.createElement("div");
+        buttons.appendChild(cart);
+        buttons.appendChild(buy);
+        buttons.setAttribute('class', 'buttons');
+
+        var prices = document.createElement("div");
+        prices.appendChild(price);
+        prices.appendChild(title);
+        prices.setAttribute('class', 'prices');
+
+        container.appendChild(owner);
+        container.appendChild(description);
+
+        var text = document.createElement("p");
+        text.setAttribute('id', 'hoverText');
+        text.innerHTML = "See More Images";
+        elem.addEventListener("mouseover", function()
+        {
+            text.style.display = 'flex';
+            elem.style.opacity = '0.7';
+        });
+        elem.addEventListener("mouseout", function()
+        {
+            text.style.display = 'none';
+            elem.style.opacity = '1.0';
+        });
+        div.appendChild(text);
+        div.appendChild(elem);
+        div.appendChild(container);
+        div.appendChild(buttons);
+        div.append(prices);
+        create.append(div);
+        document.body.append(create);
+  //      div.appendChild(description);
+    //    div.append(title);
+    //    div.append(price)
+
+        console.log(string);
+    //     document.getElementById(string).appendChild(string2);
+  //      document.getElementById(string).appendChild(string2);
+      //  document.getElementById(string).appendChild(string2);
+      //  document.getElementById(string).appendChild(description);
+      //  document.getElementById(string).appendChild(owner);
+      }
+      function composeDiv()
+      {
+        var div = document.getElementById("composeRemove");
+        div.style.display = 'block';
+        console.log("clicked");
+      }
+      function remove()
+      {
+        var div = document.getElementById("composeRemove");
+        div.style.display = 'none';
+        div.style.overflow = 'hidden';
+        console.log("clicked");
+      }
+      function composeSetting()
+      {
+        var div = document.getElementById("settingRemove");
+        div.style.display = 'block';
+        console.log("clicked");
+      }
+      function removeSetting()
+      {
+        var div = document.getElementById("settingRemove");
+        div.style.display = 'none';
+        document.getElementsByTagName('h1')[0].style.display = 'block';
+        document.getElementById("card-element").style.marginTop = "40px";
+        document.getElementById("card-element").style.display = "block";
+        if(document.getElementsByClassName("StripeElement").length>1)
+        {
+          document.getElementsByClassName("StripeElement")[1].style.marginTop = "25px";
+        }
+        console.log("clicked");
+      }
+      function upload()
+      {
+        var root = firebase.database().ref("Posts");
+        firebase.auth().onAuthStateChanged((usernew) => {
+          if (usernew) {
+            // User logged in already or has just logged in.
+            var info = {"Item": document.getElementById("itemId").value, "description": document.getElementById("desId").value,"id": usernew.uid, "price":document.getElementById("priceId").value, "url": "www.google.com"};
+            var element = root.push(info);
+            root.child(element.key).update({"postid":element.key});
+            remove();
+            var files = $(document).find('input[type="file"]')[0].files;
+            for (var i = 0; i < files.length; i++)
+            {
+              const ref = firebase.storage().ref("finalim");
+              const name = (+new Date()) + '-' + files[i].name;
+              const metadata = {"key": element.key};
+                const task = ref.child(element.key).child(name).put(files[i], metadata);
+                task
+                .then(snapshot => snapshot.ref.getDownloadURL())
+                .then((url) => {
+                  let contenturl =  firebase.database().ref(element.key);
+                  contenturl.push(url);
+                  console.log(url);
+                })
+                .catch(console.error);
+            }
+          } else {
+            // User not logged in or has just logged out.
+          }
+        });
+      }
+      function shop()
+      {
+        window.location.assign("shopping.html")
+      }
+      function removeImage()
+      {
+        var div = document.getElementById("imageRemove");
+        div.style.display = "none";
+      }
+    </script>
+    <div class="blackDiv" id = "imageRemove">
+        <img src="close.png" onclick = "removeImage();" alt="" class = "close">
+    </div>
+    <div class="composeDiv" id = "composeRemove">
+      <div class="content">
+        <img src="logo.png" id = "logo" alt="">
+        <img src="close.png" onclick = "remove();" alt="" class = "close">
+        <input type="text" name="" value="" placeholder="Item Name" id = "itemId">
+        <br>
+        <input type="text" name="" value="" placeholder="Price (dollars.cents)" id = "priceId">
+        <br>
+        <textarea name="name" rows="8" cols="80" placeholder="Description" id = "desId" class = "composeDes"></textarea>
+        <p>select images: </p>
+        <input type="file" name="files[]" value="" multiple = "multiple" accept="image/*">
+        <input type="submit" value="submit" onclick = "upload();">
+      </div>
+    </div>
+    <div class="composeDiv" id = "settingRemove">
+      <div class="content" id = "contentRemove">
+        <img src="close.png" onclick = "removeSetting();" alt="" class = "close">
+        <h1><em>Settings</em></h1>
+        <script type="text/javascript">
+            firebase.auth().onAuthStateChanged((usernew) => {
+              if (usernew) {
+                ref = firebase.database().ref("Buy");
+                document.getElementById("shopLabel").innerHTML = 0;
+                ref.child(usernew.uid).on("value", function(snapshot) {
+                  document.getElementById("shopLabel").innerHTML = snapshot.numChildren();
+                })
+                console.log(usernew.uid + "id");
+                child = usernew;
+                ref = firebase.database().ref("Payment").child(child.uid);
+                ref.orderByKey().on("child_added", function(snapshot)
+                {
+                    if(snapshot.exists())
+                    {
+                    $.ajax({
+                        type: "POST",
+                        url: "retrieve.php",
+                        data: {"customerId": snapshot.val()},
+                          success: function(data) {
+                            data = JSON.parse(data);
+                            console.log(data);
+                            for(var i=0; i<data.length; i++){
+                              var div = document.createElement("div");
+                              div.setAttribute('class', 'StripeElement');
+                              div.setAttribute('color', 'grey');
+                              div.setAttribute('id', data[i]["id"]);
+                              var crd = document.createElement("img");
+                              crd.setAttribute('class', 'cardImage');
+                              crd.setAttribute('src', 'american.png');
+                              var number = document.createElement("LABEL");
+                              number.setAttribute('class', 'cardNumber');
+                              div.append(crd);
+                              div.append(number);
+                              var date = document.createElement("LABEL");
+                              date.setAttribute('class', 'cardDate');
+                              div.append(date);
+                              number.innerHTML = "<span>&middot;&middot;&middot;&middot; &middot;&middot;&middot;&middot &middot;&middot;&middot;&middot</span> " + data[i]["last4"];
+                              date.innerHTML = data[i]["month"] + "/" + data[i]["year"];
+                              console.log("success");
+                              var outer = document.getElementById("contentRemove");
+                              outer.append(div);
+                              if(data[i]["bool"] == true)
+                              {
+                                div.style.border = "2px solid #001f3f";
+                              }
+                              let dv = document.getElementById(data[i]["id"]);
+                              dv.addEventListener("click", function(){
+                                var x = document.getElementById("contentRemove").querySelectorAll("div");
+                                for(let i= 0; i<x.length; i++)
+                                {
+                                  console.log("hello");
+                                  x[i].style.border = "none";
+                                }
+                                dv.style.border = "2px solid #001f3f";
+                                console.log(snapshot.val() + "->" + dv.id);
+                                $.ajax({
+                                    type: "POST",
+                                    url: "default.php",
+                                    data: {"customerId": snapshot.val(), "cardId": dv.id},
+                                      success: function(data) {
+                                        console.log(data);
+                                      }
+                                    });
+                              });
+                            };
+                        }
+                    });
+                  }
+
+                    // Create an instance of the card Element.
+
+                });
+              } else {
+                // User not logged in or has just logged out.
+              }
+            });
+        </script>
+        <form action="" method="post" id="payment-form" class = "formClass">
+          <div class="form-row">
+            <div id="card-element">
+              <!-- A Stripe Element will be inserted here. -->
+            </div>
+
+            <!-- Used to display form errors. -->
+            <div id="card-errors" role="alert"></div>
+          </div>
+          <button>Submit Payment</button>
+        </form>
+        <button type="button" name="button" id = "logOut" onclick = "logout();" class = "out">Log Out</button>
+      </div>
+    </div>
+    <script type="text/javascript">
+      // Create a Stripe client.
+      var stripe = Stripe('pk_test_jxUg204A6OkUg6qyhW3YTWCu00RfKazuKW');
+
+      // Create an instance of Elements.
+      var elements = stripe.elements();
+
+      // Custom styling can be passed to options when creating an Element.
+      // (Note that this demo uses a wider set of styles than the guide below.)
+      var style = {
+        base: {
+          color: '#32325d',
+          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+          fontSmoothing: 'antialiased',
+          fontSize: '16px',
+          '::placeholder': {
+            color: '#aab7c4'
+          }
+        },
+        invalid: {
+          color: '#fa755a',
+          iconColor: '#fa755a'
+        }
+      };
+
+      // Create an instance of the card Element.
+      var card = elements.create('card', {style: style});
+
+      // Add an instance of the card Element into the `card-element` <div>.
+      card.mount('#card-element');
+
+      // Handle real-time validation errors from the card Element.
+      card.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-errors');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+      // Handle form submission.
+      var form = document.getElementById('payment-form');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        firebase.auth().onAuthStateChanged((usernew) => {
+          if (usernew) {
+            child = usernew;
+            ref = firebase.database().ref("Payment");
+            ref.once("value", function(snapshot)
+            {
+              stripe.createToken(card).then(function(result) {
+                if(!snapshot.hasChild(usernew.uid))
+                {
+                    if (result.error) {
+                      // Inform the user if there was an error.
+                      var errorElement = document.getElementById('card-errors');
+                      errorElement.textContent = result.error.message;
+                    } else {
+                      // Send the token to your server
+                      $.ajax({
+                          type: "POST",
+                          url: "form.php",
+                          data: {"stripeToken": result.token.id},
+                            success: function(data) {
+                              var id = data;
+                              firebase.auth().onAuthStateChanged((usernew) => {
+                                if (usernew) {
+                                  var root = firebase.database().ref("Payment").child(usernew.uid);
+                                  // User logged in already or has just logged in.
+                                  var info = {"customerId": id};
+                                  root.set(info);
+                                } else {
+                                  // User not logged in or has just logged out.
+                                }
+                              });
+                          }
+                      });
+                  //    stripeTokenHandler(result.token);
+                    }
+                  }
+                  else {
+                    console.log(snapshot);
+                    let c = snapshot.child(usernew.uid).val();
+                    console.log(c.customerId);
+                    $.ajax({
+                        type: "POST",
+                        url: "add.php",
+                        data: {"customerId": c.customerId, "cardId": result.token.id},
+                          success: function(data) {
+                          console.log(data);
+                          document.location.reload();
+                        }
+                    });
+                  }
+                });
+            });
+          } else {
+            // User not logged in or has just logged out.
+          }
+        });
+
+      });
+      function logout()
+      {
+        firebase.auth().signOut().then(function() {
+  // Sign-out successful.
+            window.location.assign("index.html");
+        }, function(error) {
+            alert("unable to log out at this time")
+        });
+      }
+      // Submit the form with the token ID.
+      /*
+      function stripeTokenHandler(token) {
+        // Insert the token ID into the form so it gets submitted to the server
+        var form = document.getElementById('payment-form');
+        var hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeToken');
+        hiddenInput.setAttribute('value', token.id);
+        form.appendChild(hiddenInput);
+        // Submit the form
+        form.submit();
+      }
+      */
+    </script>
+    <div class="titlaae">
+      <img src="compose.png" alt="" class = "compose" onclick = "composeDiv();">
+      <img src="logot.png" alt="" id = "removeImage" onclick = "composeSetting();">
+      <img src="official.png" alt="" class = "shoppingImage" onclick = "shop();">
+      <label class = "numberCircle labelCart" id = "shopLabel"></label>
+    </div>
+</html>
