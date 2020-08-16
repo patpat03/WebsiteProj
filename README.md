@@ -8,3 +8,4 @@ Index.html: The log in page for the website, acesses firebase in order to get lo
 MainPage: Has a series of services you can buy, which you can add to your shopping cart, you can also add your payment information on this page which will be read using stripe
 Shopping Cart: You can see which items you have added to the shopping cart and check out. There is a running total on the right hand side and there 
 the credit card information entered in the hopepage is used
+![log in](https://i.postimg.cc/Qt9Htx40/Screen-Shot-2020-08-16-at-5-06-30-PM.png)
